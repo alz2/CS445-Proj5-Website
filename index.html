@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title></title>
+    <style type="text/css">
+        .caption {
+            font-style: italic;
+            text-align: center;
+        }
+
+        .ImgMain {
+            max-width: 75%;
+            max-height: 75%;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 style="text-align:center;">CS445 Proj 5: Video Stitching and Processing</h1>
+    <p class="caption">By Andrew Zhang (alz2)</p>
+    <hr />
+
+    <h2>Part 1: Stitch Two Keyframes</h2>
+    <div style="display: flex; justify-content: space-between;">
+        <img src="static/f0270.jpg" style="max-width:33%; max-height:400px">
+        <img src="static/part1_stitch.png" style="max-width:33%; max-height:400px">
+        <img src="static/f0450.jpg" style="max-width:33%; max-height:400px">
+    </div>
+    <p>I tried my own stitching algorithm of just pasting one image on top of another with a binary mask. Instead of masking for the black pixels, I masked for the pixels which had at least one signal in any channel.</p>
+
+    <h2>Part 2: Panorama using five key frames</h2>
+    <img src="static/part2_panorama.png" class="ImgMain">
+    <p>I used the stitching function in utils.</p>
+
+    <h2>Part 3: Map the video to the reference plane</h2>
+    <p>I kept most of the default paramters the same, except I changed the distance tolerance in auto_homography to 0.75 instead of1. I also ran with 5 Keyframes</p>
+    <a href="https://drive.google.com/open?id=1Ibdz3Uex3iR5j5mJ8aX08S2uBWCXhfI_">Link to reference plane video.</a>
+
+    <h2>Part 4: Create background panorama</h2>
+    <h3>Using the Average</h3>
+    <img src="static/part4_panorama_average.png" class="ImgMain">
+    <h3>Using the Median</h3>
+    <img src="static/part4_panorama_median.png" class="ImgMain" ,>
+
+    <p> I investigated finding the background by using the average and median pixels, and it seems like the median pixel works slightly better as it produced alot sharper edges. I chose to use the median pixel for my background calculations moving forward. </p>
+
+    <h2>Part 5: Create background movie</h2>
+    <a href="https://drive.google.com/open?id=1okfv_W7q8TXRviXg4Przasbhqo2gPAZn">Link to background video.</a>
+
+    <h2>Part 6: Create foreground movie</h2>
+    <a href="https://drive.google.com/open?id=1NlyZ9XW33VF-JZvfdURWOspNzb8MGT0S">Link to foreground video.</a>
+
+    <h2>Bells and Whistles Maybe?</h2>
+    <p>The only probably non standard thing I did was to use a soft mask to determine whether a pixel was a foreground pixel. The high level idea was to find an interpolated image between the background image and the original frame such that once we subtract the background image from the foreground image, we would only have foreground pixels. To find this interpolation, given an background image and an untouched frame, I calculated a weight for each pixel such that if I were confident that it's a background pixel, I'd give it a weight of 0, and if I were confident that it was a foreground pixel, I'd give a weight of of 1. If I was unsure, I'd give a weight somewhere inbetween. The result of this would be that given this mask m, (m*frame + (1-m)*background) - background = foreground. </p>
+    <p> To calculate these weights, I calculated the eulclidian distance between the corresponding pixels in the frame and background and tuned two numbers max_diff and min_diff, such that if the distance between the frame pixel and background pixel was greater than max_diff, I'd be confident that the frame pixel belonged to the foreground. min_diff is the same but flipped. If the difference between the pixels were between min_diff and max_diff, I determed the weight to be w = (distance - min_diff) / (max_diff - min_diff).</p>
+    <p> The cool thing about this way is that it provides two parameters to tune! Even though my video didn't turn out to be very good (seems to be due to my unstable homographies), I think the algorithm might yield some nice foreground pixels!</p>
+
+</body>
+
+</html>
